@@ -1,7 +1,6 @@
 import datetime as dt
 import logging
 
-from telegram import ReplyKeyboardMarkup
 from telegram.ext import Application, MessageHandler, filters
 # Добавим необходимый объект из модуля telegram.ext
 from telegram.ext import CommandHandler
@@ -39,35 +38,53 @@ async def echo(update, context):
     await update.message.reply_text(f'«Я получил сообщение {update.message.text}»')
 
 
+# Напишем соответствующие функции.
+# Их сигнатура и поведение аналогичны обработчикам текстовых сообщений.
 async def start(update, context):
     await update.message.reply_text(
-        "Я бот-справочник. Какая информация вам нужна?",
-        reply_markup=markup
-    )
+        "Привет. Пройдите небольшой опрос, пожалуйста!\n"
+        "Вы можете прервать опрос, послав команду /skip.\n"
+        "В каком городе вы живёте?")
+
+    # Число-ключ в словаре states —
+    # втором параметре ConversationHandler'а.
+    return 1
+    # Оно указывает, что дальше на сообщения от этого пользователя
+    # должен отвечать обработчик states[1].
+    # До этого момента обработчиков текстовых сообщений
+    # для этого пользователя не существовало,
+    # поэтому текстовые сообщения игнорировались.
 
 
-async def help(update, context):
+async def first_response(update, context):
+    # Это ответ на первый вопрос.
+    # Мы можем использовать его во втором вопросе.
+    locality = update.message.text
     await update.message.reply_text(
-        "Я бот справочник.")
+        f"Какая погода в городе {locality}?")
+    # Следующее текстовое сообщение будет обработано
+    # обработчиком states[2]
+    return 2
 
 
-async def address(update, context):
-    await update.message.reply_text(
-        "Адрес: г. Москва, ул. Льва Толстого, 16")
+async def second_response(update, context):
+    # Ответ на второй вопрос.
+    # Мы можем его сохранить в базе данных или переслать куда-либо.
+    weather = update.message.text
+    logger.info(weather)
+    await update.message.reply_text("Спасибо за участие в опросе! Всего доброго!")
+    return ConversationHandler.END  # Константа, означающая конец диалога.
+    # Все обработчики из states и fallbacks становятся неактивными.
 
 
-async def phone(update, context):
-    await update.message.reply_text("Телефон: +7(495)776-3030")
+async def skip(update, context):
+    await update.message.reply_text("«Какая погода у вас за окном?»")
+    return ConversationHandler.END
 
 
-async def site(update, context):
-    await update.message.reply_text(
-        "Сайт: http://www.yandex.ru/company")
-
-
-async def work_time(update, context):
-    await update.message.reply_text(
-        "Время работы: круглосуточно.")
+async def help_command(update, context):
+    """Отправляет сообщение когда получена команда /help"""
+    await update.message.reply_text("Я пока не умею помогать... Я только ваше эхо.")
 
 
 async def get_time(update, context):
@@ -112,15 +129,6 @@ async def task(context):
     await context.bot.send_message(context.job.chat_id, text=f'КУКУ! {TIMER}c. прошли!')
 
 
-async def close_keyboard(update, context):
-    await update.message.reply_text(
-        "Ok",
-        reply_markup=ReplyKeyboardRemove()
-    )
-
-
-
-
 def main():
     # Создаём объект Application.
     # Вместо слова "TOKEN" надо разместить полученный от @BotFather токен
@@ -133,18 +141,14 @@ def main():
     # с типом "текст", т. е. текстовых сообщений.
     text_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, echo)
     application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("time", get_time))
     application.add_handler(CommandHandler("date", get_data))
     application.add_handler(CommandHandler("set_timer", set_timer))
     application.add_handler(CommandHandler("unset", unset))
-    application.add_handler(CommandHandler("address", address))
-    application.add_handler(CommandHandler("phone", phone))
-    application.add_handler(CommandHandler("site", site))
-    application.add_handler(CommandHandler("work_time", work_time))
-    application.add_handler(CommandHandler("help", help))
-    application.add_handler(CommandHandler("close", close_keyboard))
+    application.add_handler(CommandHandler("skip", skip))
 
-    application.run_polling()
+    # Регистрируем обработчик в приложении.
     application.add_handler(text_handler)
 
     # Запускаем приложение.
@@ -156,8 +160,5 @@ def main():
 
 
 # Запускаем функцию main() в случае запуска скрипта.
-reply_keyboard = [['/address', '/phone'],
-                  ['/site', '/work_time']]
-markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=False)
 if __name__ == '__main__':
     main()
