@@ -35,7 +35,7 @@ async def echo(update, context):
     # У message есть поле text, содержащее текст полученного сообщения,
     # а также метод reply_text(str),
     # отсылающий ответ пользователю, от которого получено сообщение.
-    await update.message.reply_text(f'«Я получил сообщение {update.message.text}»')
+    await update.message.reply_text(f'ваааау, у меня прям такая же')
 
 
 # Напишем соответствующие функции.
@@ -84,7 +84,7 @@ async def skip(update, context):
 
 async def help_command(update, context):
     """Отправляет сообщение когда получена команда /help"""
-    await update.message.reply_text("Я пока не умею помогать... Я только ваше эхо.")
+    await update.message.reply_text("мне бы кто помог...")
 
 
 async def get_time(update, context):
@@ -97,36 +97,6 @@ async def get_data(update, context):
     await update.message.reply_text(str(dt.datetime.now().date()))
 
 
-async def set_timer(update, context):
-    global TIMER
-    """Добавляем задачу в очередь"""
-    chat_id = update.effective_message.chat_id
-    # Добавляем задачу в очередь
-    # и останавливаем предыдущую (если она была)
-    job_removed = remove_job_if_exists(str(chat_id), context)
-    if update.message.text.split()[-1].isdigit():
-        TIMER = int(update.message.text.split()[-1])
-    else:
-        TIMER = 5
-    context.job_queue.run_once(task, TIMER, chat_id=chat_id, name=str(chat_id), data=TIMER)
-
-    text = f'Вернусь через {TIMER} с.!'
-    if job_removed:
-        text += ' Старая задача удалена.'
-    await update.effective_message.reply_text(text)
-
-
-async def unset(update, context):
-    """Удаляет задачу, если пользователь передумал"""
-    chat_id = update.message.chat_id
-    job_removed = remove_job_if_exists(str(chat_id), context)
-    text = 'Таймер отменен!' if job_removed else 'У вас нет активных таймеров'
-    await update.message.reply_text(text)
-
-
-async def task(context):
-    """Выводит сообщение"""
-    await context.bot.send_message(context.job.chat_id, text=f'КУКУ! {TIMER}c. прошли!')
 
 
 def main():
@@ -144,7 +114,6 @@ def main():
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("time", get_time))
     application.add_handler(CommandHandler("date", get_data))
-    application.add_handler(CommandHandler("set_timer", set_timer))
     application.add_handler(CommandHandler("unset", unset))
     application.add_handler(CommandHandler("skip", skip))
 
