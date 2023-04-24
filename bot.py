@@ -69,7 +69,14 @@ def user_dobav(message):
 def start(message):
     bot.reply_to(message, " Здравствуйте, приветствую Вас здесь. "
                           "Бот пока что создаётся, и его основные команды: "
-                          "/info и /dobavlenie. ")
+                          "/info и /dobavlenie. "
+                          "ну и /help, для удобства")
+
+
+@bot.message_handler(commands=['help'])
+def start(message):
+    bot.reply_to(message, "перечень доступных команд:"
+                          "/picha ")
 
 
 # здесь задаётся основной вопрос
