@@ -1,11 +1,15 @@
 import telebot
-import sqlite3
 from telebot import types
-from config import bot
 
 text = []
+bot = telebot.TeleBot("6141711214:AAFQJaGMkHq5ZfXobLIvXUFxaWOnOy5mjjM")
 
 
+# до использования бота, обязательно нужно зарегестрироваться
+# регистрация может быть любой и создана для проверки живой ли человек
+# бот не сможет ввести данные, и соответственно не будет спамить
+# На вопрос желаете зарегестрироваться желатьно не вводить ваши логины и пороли
+# на вопрос тоже можно ответить и да и нет
 @bot.message_handler(commands=['dobavlenie'])
 def application(message):
     rmk = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -16,6 +20,11 @@ def application(message):
     bot.register_next_step_handler(msg, user_answer)
 
 
+# если вы ответили да
+# поздравляю, впишите логин или пароль
+# если нет, то он может вас предупредить
+# так же бот может вас не понять
+# но дл этого надо постараться
 def user_answer(message):
     if message.text == "Да":
         msg = bot.send_message(message.chat.id, "Впишите ваши данные")
@@ -26,6 +35,7 @@ def user_answer(message):
         bot.send_message(message.chat.id, "Я что-то не понимаю вашей речи")
 
 
+# снова базовый вопрос
 def user_reg(message):
     bot.send_message(message.chat.id, f"Your data: {message.text}")
     pmk = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -36,6 +46,8 @@ def user_reg(message):
     bot.register_next_step_handler(mpg, user_history)
 
 
+# тут вы уже можете вписать свою историю
+# если же у вас нет времени, то бот просто предложить написать в другой раз
 def user_history(message):
     if message.text == "Да":
         mpg = bot.send_message(message.chat.id, "Впишите вашу историю")
@@ -52,6 +64,7 @@ def user_dobav(message):
     print(message.text)
 
 
+# приветствие и ознакомление с ботом
 @bot.message_handler(commands=['start'])
 def start(message):
     bot.reply_to(message, " Здравствуйте, приветствую Вас здесь. "
@@ -59,6 +72,9 @@ def start(message):
                           "/info и /dobavlenie. ")
 
 
+# здесь задаётся основной вопрос
+# на него можете ответить либо да
+# либо нет
 @bot.message_handler(commands=['info'])
 def get_user_info(message):
     markup_inline = types.InlineKeyboardMarkup()
@@ -71,6 +87,13 @@ def get_user_info(message):
                      )
 
 
+# следующая функция показ айди и ника
+# он задаёт вопрос, на который вы можете ответить да, или нет
+# при согласии бот даёт выбор:
+# Показывает две кнопки, которые находятся внизу панели
+# конпка: МОЙ ID, показывает ваш ID, вауууу
+# кнопка: МОЙ НИК, показывает вашь ник
+# при отказе бот вас посылает
 @bot.callback_query_handler(func=lambda call: True)
 def answer(call):
     if call.data == 'yes':
@@ -85,10 +108,40 @@ def answer(call):
     elif call.data == 'no':
         bot.send_message(call.message.chat.id, "ну и иди далеко, и на долго")
 
-# следующая функция показ айди и ника
-# Показываетс он средством двух кнопок, которые находятся внизу панели
-# конпка: МОЙ ID, показывает ваш ID, вауууу
-#кнопка: МОЙ НИК, показывает вашь ник
+
+# обавлено по приколу
+# должно вывести несколько вопросов
+
+@bot.message_handler(commands=["picha"])
+def inline(message):
+    key = types.InlineKeyboardMarkup()
+    but_1 = types.InlineKeyboardButton(text="Где проходит", callback_data="Где проходит")
+    but_2 = types.InlineKeyboardButton(text="Кто спикеры", callback_data="Кто спикеры")
+    but_22 = types.InlineKeyboardButton(text="Сколько стоит", callback_data="Сколько стоит")
+    key.add(but_1, but_2, but_22)
+    bot.send_message(message.chat.id,
+                     "Рады приветствовать Вас! В преддверии главного праздника весны мы организуем самое масштабное событие для ярких, стильных и успешных женщин!")
+    bot.send_message(message.chat.id, "Картинка", reply_markup=key)
+
+
+@bot.callback_query_handler(func=lambda c: True)
+def inlin(c):
+    if c.data == "Где проходит":
+        bot.send_photo(c.chat_id, photo=("Photo.PNG"))
+    elif c.data == "Кто спикеры":
+        bot.send_message(c.message.chat.id, "Ответ спикеры")
+    elif c.data == "Сколько стоит":
+        bot.send_message(c.message.chat.id, "стоимость")
+
+
+if __name__ == '__main__':
+    bot.polling(none_stop=True)
+
+
+# после вашего выбора, бот выдаёт результат
+# результатом будет то, что вы спросили
+# например, если вы спросили МОЙ ID, то вам покажут вашь айди
+# а если вы спросили МОЙ НИК, то вам выдастся ник
 @bot.message_handler(content_types=['text'])
 def get_text(message):
     if message.text == "МОЙ ID":
