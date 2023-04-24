@@ -1,8 +1,10 @@
 import telebot
 from telebot import types
 
+from config import TOKEN
+
 text = []
-bot = telebot.TeleBot("6141711214:AAFQJaGMkHq5ZfXobLIvXUFxaWOnOy5mjjM")
+bot = telebot.TeleBot(TOKEN)
 
 
 # до использования бота, обязательно нужно зарегестрироваться
@@ -79,6 +81,30 @@ def start(message):
                           "/picha ")
 
 
+# обавлено по приколу
+# должно вывести несколько вопросов
+@bot.message_handler(commands=["picha"])
+def inline(message):
+    key = types.InlineKeyboardMarkup()
+    but_1 = types.InlineKeyboardButton(text="Где проходит", callback_data="Где проходит")
+    but_2 = types.InlineKeyboardButton(text="Кто спикеры", callback_data="Кто спикеры")
+    but_22 = types.InlineKeyboardButton(text="Сколько стоит", callback_data="Сколько стоит")
+    key.add(but_1, but_2, but_22)
+    bot.send_message(message.chat.id,
+                     "Рады приветствовать Вас! В преддверии главного праздника весны мы организуем самое масштабное событие для ярких, стильных и успешных женщин!")
+    bot.send_message(message.chat.id, "Картинка", reply_markup=key)
+
+
+@bot.callback_query_handler(func=lambda c: True)
+def inlin(c):
+    if c.data == "Где проходит":
+        bot.send_photo(c.chat_id, photo=("Photo.PNG"))
+    elif c.data == "Кто спикеры":
+        bot.send_message(c.message.chat.id, "Ответ спикеры")
+    elif c.data == "Сколько стоит":
+        bot.send_message(c.message.chat.id, "стоимость")
+
+
 # здесь задаётся основной вопрос
 # на него можете ответить либо да
 # либо нет
@@ -114,31 +140,6 @@ def answer(call):
                          )
     elif call.data == 'no':
         bot.send_message(call.message.chat.id, "ну и иди далеко, и на долго")
-
-
-# обавлено по приколу
-# должно вывести несколько вопросов
-
-@bot.message_handler(commands=["picha"])
-def inline(message):
-    key = types.InlineKeyboardMarkup()
-    but_1 = types.InlineKeyboardButton(text="Где проходит", callback_data="Где проходит")
-    but_2 = types.InlineKeyboardButton(text="Кто спикеры", callback_data="Кто спикеры")
-    but_22 = types.InlineKeyboardButton(text="Сколько стоит", callback_data="Сколько стоит")
-    key.add(but_1, but_2, but_22)
-    bot.send_message(message.chat.id,
-                     "Рады приветствовать Вас! В преддверии главного праздника весны мы организуем самое масштабное событие для ярких, стильных и успешных женщин!")
-    bot.send_message(message.chat.id, "Картинка", reply_markup=key)
-
-
-@bot.callback_query_handler(func=lambda c: True)
-def inlin(c):
-    if c.data == "Где проходит":
-        bot.send_photo(c.chat_id, photo=("Photo.PNG"))
-    elif c.data == "Кто спикеры":
-        bot.send_message(c.message.chat.id, "Ответ спикеры")
-    elif c.data == "Сколько стоит":
-        bot.send_message(c.message.chat.id, "стоимость")
 
 
 if __name__ == '__main__':
